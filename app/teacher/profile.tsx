@@ -1,10 +1,10 @@
 // app/tabs/explore.tsx
 import { Text, View } from 'react-native';
 
-export default function Explore() {
+export default function Profile() {
   return (
     <View>
-      <Text>Explore Screen</Text>
+      <Text>Teacher Profile Screen</Text>
     </View>
   );
 }

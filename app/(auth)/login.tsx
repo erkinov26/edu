@@ -1,5 +1,5 @@
 import { loginUser, registerUser } from '@/scripts/axios';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,22 +12,35 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
+import useStore from '@/store';
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const [role, setRole] = useState<'pupil' | 'teacher'>('pupil');
   const [menuVisible, setMenuVisible] = useState(false);
-
+  const router = useRouter()
+  const { setUser } = useStore();
   const loginMutation = useMutation({
     mutationFn: () => loginUser(email, password),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setUser(data);
       Alert.alert('Success', 'Muvaffaqiyatli tizimga kirdingiz');
+
+      if (data.role === 'teacher') {
+        router.replace('/teacher/home');
+      } else if (data.role === 'pupil') {
+        router.replace('/pupil/home');
+      } else {
+        router.replace('/(auth)');
+      }
     },
     onError: (error: any) => {
-      Alert.alert('Xatolik', error?.response?.data?.message || 'Login xatoligi');
+      Alert.alert('Xatolik', error.message || 'Login xatoligi');
     },
   });
 
@@ -38,7 +51,7 @@ export default function AuthScreen() {
       setIsLogin(true);
     },
     onError: (error: any) => {
-      Alert.alert('Xatolik', error?.response?.data?.message || 'Ro‘yxatdan o‘tishda xatolik');
+      Alert.alert('Xatolik', error.message || 'Ro‘yxatdan o‘tishda xatolik');
     },
   });
 
@@ -65,7 +78,7 @@ export default function AuthScreen() {
   const roleLabel = role === 'pupil' ? 'O‘quvchi' : 'O‘qituvchi';
 
   const roles = [
-    { key: 'pupil', label: 'O‘quvchi' },
+    // { key: 'pupil', label: 'O‘quvchi' },
     { key: 'teacher', label: 'O‘qituvchi' },
   ];
 
