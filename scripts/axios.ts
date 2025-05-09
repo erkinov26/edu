@@ -1,9 +1,8 @@
 import axios from 'axios';
-import mime from 'mime';
-
+import * as DocumentPicker from 'expo-document-picker';
 // Supabase konfiguratsiyasi
-const SUPABASE_URL = 'https://ovffwluegmjrpeoqclrw.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92ZmZ3bHVlZ21qcnBlb3FjbHJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2MDk2MzUsImV4cCI6MjA2MjE4NTYzNX0.gh0JuqEdToEEPMRUiNhsDSdIpNhczL9V27kdOdglrgw';
+export const SUPABASE_URL = 'https://ovffwluegmjrpeoqclrw.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92ZmZ3bHVlZ21qcnBlb3FjbHJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY2MDk2MzUsImV4cCI6MjA2MjE4NTYzNX0.gh0JuqEdToEEPMRUiNhsDSdIpNhczL9V27kdOdglrgw';
 
 export const supabaseAxios = axios.create({
   baseURL: `${SUPABASE_URL}/rest/v1`,
@@ -226,34 +225,47 @@ export const createTask = async (taskData: {
   file_url?: string;
   group_id?: string;
 }) => {
+  console.log("🚀 ~ taskData:", taskData)
   const response = await supabaseAxios.post('/tasks', taskData);
   return response.data;
 };
+// https://ovffwluegmjrpeoqclrw.supabase.co/storage/v1/object/public/tasks//Resume.pdf
+export const uploadFile = async (setUploadStatus: any, setuploadedFile: any) => {
+  // Fayl tanlash
+  const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true });
 
-export const uploadFile = async (uri: string) => {
-  const fileName = uri.split('/').pop();
-  const fileType = mime.getType(uri) || 'application/octet-stream';
+  if (result.canceled || !result.assets?.length) return;
 
-  const formData = new FormData();
-  formData.append('file', {
-    uri: `eq.${uri}`,
-    name: `eq${fileName}`,
-    type: `eq.${fileType}`,
-  } as any); // React Native’da `as any` ishlatish zarur bo’ladi
+  const file = result.assets[0];
 
-  const { data } = await supabaseAxios.post(
-    `${SUPABASE_URL}/storage/v1/object/tasks/${fileName}`,
-    formData,
-    {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-        'Content-Type': 'multipart/form-data',
-      },
+  try {
+    setUploadStatus("Uploading...");
+    const { uri, name, mimeType } = file;
+    const fileData = await fetch(uri);
+    const blob = await fileData.blob();
+
+    const response = await axios.put(
+      `${SUPABASE_URL}/storage/v1/object/tasks/${name}`,
+      blob,
+      {
+        headers: {
+          "Content-Type": mimeType || "application/octet-stream",
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "x-upsert": "true", // Fayl bor bo‘lsa ham ustiga yozadi
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      setUploadStatus("Uploaded successfully!");
+      console.log(response.data);
+      setuploadedFile(`${SUPABASE_URL}/storage/v1/object/public/tasks/${response.data.Key}`)
+
+    } else {
+      setUploadStatus(`Upload failed with status ${response.status}`);
     }
-  );
-
-  console.log(`${SUPABASE_URL}/storage/v1/s3/\/tasks/${fileName}`);
-
-  return `${SUPABASE_URL}/storage/v1/object/public/tasks/${fileName}`;
+  } catch (error: any) {
+    console.error("Upload error:", error);
+    setUploadStatus("Upload failed");
+  }
 };
