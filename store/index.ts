@@ -24,8 +24,8 @@ const useStore = create<useStore>((set) => ({
   },
 
   logout: async () => {
-    await AsyncStorage.removeItem('user'); // local storage tozalanadi
-    set({ user: null }); // store'dagi user null qilinadi
+    await AsyncStorage.removeItem('user');
+    set({ user: null }); 
   },
 }));
 

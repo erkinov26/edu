@@ -34,7 +34,7 @@ export default function AuthScreen() {
       if (data.role === 'teacher') {
         router.replace('/teacher/home');
       } else if (data.role === 'student') {
-        router.replace('/student/home');
+        router.replace('/student/profile');
       } else {
         router.replace('/(auth)');
       }

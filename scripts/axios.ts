@@ -95,8 +95,85 @@ export async function getTeacherGroups(teacherId: string) {
   } catch (error: any) {
     throw new Error(error.message || 'Tizimga kirishda xatolik yuz berdi');
   }
-
 }
+
+export const getStudentGroups = async (studentId: string) => {
+  try {
+    console.log("Fetching student groups...");
+
+    const response = await supabaseAxios.get(`/group_students?student_id=eq.${studentId}&select=groups(*)`);
+
+    if (!response.data || response.data.length === 0) {
+      throw new Error("Bu o'quvchida hali guruhlar yo'q, guruhlarni yarating");
+    }
+
+    // group_students jadvalidan kelgan `groups` ma'lumotlarini ajratib olish
+    const groups = response.data.map((item: any) => item.groups);
+
+    return groups;
+  } catch (error: any) {
+    throw new Error(error.message || "Tizimga kirishda xatolik yuz berdi");
+  }
+};
+export const joinGroup = async ({ studentId, groupId }: { studentId: string, groupId: string }) => {
+  try {
+    const response = await supabaseAxios.post('/group_students', {
+      student_id: studentId,
+      group_id: groupId,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.message || "Guruhga qo'shishda xatolik yuz berdi");
+  }
+};
+
+export const getUnjoinedGroups = async (studentId: string) => {
+  try {
+    console.log("Fetching unjoined groups...");
+
+    const response = await supabaseAxios.get(
+      `/groups?select=*,group_students!left(student_id)&group_students.student_id=is.null&group_students.student_id=eq.${studentId}`
+    );
+    console.log("🚀 ~ getUnjoinedGroups ~ response:", response.data)
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.message || "Tizimga kirishda xatolik yuz berdi");
+  }
+};
+
+export const getGroupTasks = async (groupID: any) => {
+  const { data } = await supabaseAxios.get(`/tasks?group_id=eq.${groupID}`);
+  return data;
+};
+
+export const downloadFileFromSupabase = async (fileUrl: string) => {
+  try {
+    // Faylni blob formatida olish
+    const response = await axios.get(fileUrl, {
+      responseType: "blob", // faylni blob formatida olish
+    });
+
+    // Faylni blob sifatida olish
+    const fileBlob = response.data;
+    const fileUrlBlob = URL.createObjectURL(fileBlob);
+
+    // Faylni yuklab olish uchun havola yaratish
+    const link = document.createElement("a");
+    link.href = fileUrlBlob;
+    link.download = fileUrl.split("/").pop() || "file"; // Fayl nomini URLdan olish
+    link.click();
+
+    // URLni tozalash
+    URL.revokeObjectURL(fileUrlBlob);
+  } catch (error) {
+    console.error("Faylni yuklab olishda xatolik yuz berdi", error);
+    throw error;
+  }
+};
+
+
+
 export const getGroupStudents = async (groupId: string) => {
   try {
     // Supabase REST API orqali so'rov yuborish
@@ -269,3 +346,4 @@ export const uploadFile = async (setUploadStatus: any, setuploadedFile: any) => 
     setUploadStatus("Upload failed");
   }
 };
+
