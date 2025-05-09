@@ -33,7 +33,7 @@ export default function AuthIndex() {
   }
 
   if (user.role === 'student') {
-    return <Redirect href="/pupil/home" />;
+    return <Redirect href="/student/home" />;
   }
 
   return <Redirect href="/(auth)/login" />;

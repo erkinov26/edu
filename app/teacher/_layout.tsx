@@ -5,6 +5,7 @@ export default function TeacherLayout() {
     <Tabs>
       <Tabs.Screen name="home" options={{ title: "Home" }} />
       <Tabs.Screen name="groups" options={{ title: "Groups" }} />
+      <Tabs.Screen name="tasks" options={{ title: "Tasks" }} />
       <Tabs.Screen name="profile" options={{ title: "Profile" }} />
     </Tabs>
   );

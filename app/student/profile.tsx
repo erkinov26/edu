@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 export default function Explore() {
   return (
     <View>
-      <Text>Explore Screen</Text>
+      <Text>Explore Screen thiiiiiiiiiiiiiiiiiiiiiiiiiiiiis</Text>
     </View>
   );
 }

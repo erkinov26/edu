@@ -21,7 +21,7 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const [role, setRole] = useState<'pupil' | 'teacher'>('pupil');
+  const [role, setRole] = useState<'student' | 'teacher'>('student');
   const [menuVisible, setMenuVisible] = useState(false);
   const router = useRouter()
   const { setUser } = useStore();
@@ -33,8 +33,8 @@ export default function AuthScreen() {
 
       if (data.role === 'teacher') {
         router.replace('/teacher/home');
-      } else if (data.role === 'pupil') {
-        router.replace('/pupil/home');
+      } else if (data.role === 'student') {
+        router.replace('/student/home');
       } else {
         router.replace('/(auth)');
       }
@@ -75,11 +75,12 @@ export default function AuthScreen() {
 
   const isLoading = loginMutation.isPending || registerMutation.isPending;
 
-  const roleLabel = role === 'pupil' ? 'O‘quvchi' : 'O‘qituvchi';
+  const roleLabel = role === 'student' ? 'O‘quvchi' : 'O‘qituvchi';
 
   const roles = [
     // { key: 'pupil', label: 'O‘quvchi' },
     { key: 'teacher', label: 'O‘qituvchi' },
+    { key: 'student', label: "O‘quvchi" },
   ];
 
   return (
@@ -135,7 +136,7 @@ export default function AuthScreen() {
                     key={item.key}
                     style={styles.modalItem}
                     onPress={() => {
-                      setRole(item.key as 'pupil' | 'teacher');
+                      setRole(item.key as 'student' | 'teacher');
                       setMenuVisible(false);
                     }}
                   >
